@@ -2,23 +2,40 @@ package eu.wewox.tagcloud
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import eu.wewox.tagcloud.screens.ComponentGalleryCloudScreen
+import eu.wewox.tagcloud.screens.SimpleTagCloudScreen
+import eu.wewox.tagcloud.screens.StatInTagCloudScreen
+import eu.wewox.tagcloud.ui.components.TopBar
+import eu.wewox.tagcloud.ui.theme.SpacingMedium
 import eu.wewox.tagcloud.ui.theme.TagCloudTheme
 
 /**
  * Main activity for demo application.
+ * Contains simple "Crossfade" based navigation to various examples.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,17 +45,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TagCloudTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        val state = rememberTagCloudState()
-                        TagCloudFibonacciLattice(state)
+                var example by rememberSaveable { mutableStateOf<Example?>(null) }
+
+                BackHandler(enabled = example != null) {
+                    example = null
+                }
+
+                Crossfade(targetState = example) { selected ->
+                    when (selected) {
+                        null -> RootScreen(onExampleClick = { example = it })
+                        Example.SimpleTagCloud -> SimpleTagCloudScreen()
+                        Example.StateInTagCloud -> StatInTagCloudScreen()
+                        Example.ComponentGalleryCloud -> ComponentGalleryCloudScreen()
                     }
                 }
             }
@@ -47,23 +65,34 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun TagCloudFibonacciLattice(state: TagCloudState) {
-    TagCloud(
-        state = state,
-        modifier = Modifier.padding(64.dp)
-    ) {
-        items(List(32) { "Item #$it" }) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .tagCloudItemFade()
-                    .tagCloudItemScaleDown()
-            ) {
-                Text(
-                    text = it,
-                    modifier = Modifier.padding(8.dp)
-                )
+private fun RootScreen(onExampleClick: (Example) -> Unit) {
+    Scaffold(
+        topBar = { TopBar("TagCloud Demo") }
+    ) { padding ->
+        LazyColumn(Modifier.padding(padding)) {
+            items(Example.values()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onExampleClick(it) }
+                        .padding(SpacingMedium)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = it.label,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = it.description,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = null
+                    )
+                }
             }
         }
     }
