@@ -22,4 +22,8 @@ enum class Example(
         "Component gallery cloud",
         "Showcases that every item in tag cloud is basically a Composable"
     ),
+    FeaturesCloud(
+        "Features cloud",
+        "Showcases how tag cloud can be customized"
+    ),
 }

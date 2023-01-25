@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import eu.wewox.tagcloud.screens.ComponentGalleryCloudScreen
+import eu.wewox.tagcloud.screens.FeaturesCloudScreen
 import eu.wewox.tagcloud.screens.SimpleTagCloudScreen
 import eu.wewox.tagcloud.screens.StatInTagCloudScreen
 import eu.wewox.tagcloud.ui.components.TopBar
@@ -57,6 +58,7 @@ class MainActivity : ComponentActivity() {
                         Example.SimpleTagCloud -> SimpleTagCloudScreen()
                         Example.StateInTagCloud -> StatInTagCloudScreen()
                         Example.ComponentGalleryCloud -> ComponentGalleryCloudScreen()
+                        Example.FeaturesCloud -> FeaturesCloudScreen()
                     }
                 }
             }
