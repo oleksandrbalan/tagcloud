@@ -10,7 +10,7 @@ Allows to place items on the sphere to create a tag cloud.
 
 ## Examples
 
-See Demo application and [examples](demo/src/main/kotlin/eu/wewox/tagcloud/screens).
+See Demo application and [examples](demo/src/main/java/eu/wewox/tagcloud/screens).
 
 ### Simple tag cloud
 
@@ -84,7 +84,7 @@ TagCloud(
 }
 ```
 
-See Demo application and [examples](demo/src/main/kotlin/eu/wewox/tagcloud/screens) for more usage examples.
+See Demo application and [examples](demo/src/main/java/eu/wewox/tagcloud/screens) for more usage examples.
 
 ## TODO list
 
