@@ -8,9 +8,13 @@ Tag cloud as 3D sphere.
 
 Allows to place items on the sphere to create a tag cloud.
 
+## Multiplatform
+
+Library supports [Android](https://developer.android.com/jetpack/compose), [iOS](https://github.com/JetBrains/compose-multiplatform-ios-android-template/#readme) and [Desktop](https://github.com/JetBrains/compose-multiplatform-desktop-template/#readme) (Windows, MacOS, Linux) targets.
+
 ## Examples
 
-See Demo application and [examples](demo/src/main/java/eu/wewox/tagcloud/screens).
+See Demo application and [examples](demo/src/commonMain/kotlin/eu/wewox/tagcloud/screens).
 
 ### Simple tag cloud
 
@@ -30,8 +34,8 @@ See Demo application and [examples](demo/src/main/java/eu/wewox/tagcloud/screens
 ### Get a dependency
 
 **Step 1.** Add the MavenCentral repository to your build file.
-Add it in your root `build.gradle` at the end of repositories:
-```
+Add it in your root `build.gradle.kts` at the end of repositories:
+```kotlin
 allprojects {
     repositories {
         ...
@@ -40,8 +44,8 @@ allprojects {
 }
 ```
 
-Or in `settings.gradle`:
-```
+Or in `settings.gradle.kts`:
+```kotlin
 pluginManagement {
     repositories {
         ...
@@ -52,9 +56,9 @@ pluginManagement {
 
 **Step 2.** Add the dependency.
 Check latest version on the [releases page](https://github.com/oleksandrbalan/tagcloud/releases).
-```
+```kotlin
 dependencies {
-    implementation 'io.github.oleksandrbalan:tagcloud:$version'
+    implementation("io.github.oleksandrbalan:tagcloud:$version")
 }
 ```
 
@@ -84,11 +88,10 @@ TagCloud(
 }
 ```
 
-See Demo application and [examples](demo/src/main/java/eu/wewox/tagcloud/screens) for more usage examples.
+See Demo application and [examples](demo/src/commonMain/kotlin/eu/wewox/tagcloud/screens) for more usage examples.
 
 ## TODO list
 
-* Compose for desktop support
 * Add ability to focus an item
 * Add content padding for the TagCloud to expand gesture area
 * Add fling support
