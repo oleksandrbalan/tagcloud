@@ -4,8 +4,10 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalViewConfiguration
 
 /**
  * The custom modifier to detect rotation gesture on the TagCloud.
@@ -23,21 +25,26 @@ internal fun Modifier.rotateGesture(
     onStart: () -> Unit,
     onEnd: () -> Unit,
     onRotate: (Offset, Offset) -> Unit,
-): Modifier = pointerInput(enabled, key) {
-    if (!enabled) {
-        return@pointerInput
-    }
-    forEachGesture {
-        awaitPointerEventScope {
-            val down = awaitFirstDown(requireUnconsumed = false)
-            onStart()
-            var dragCurrent = down.position
-            drag(down.id) { change ->
-                onRotate(dragCurrent, change.position)
-                dragCurrent = change.position
-                change.consume()
+): Modifier = composed {
+    val touchSlop = LocalViewConfiguration.current.touchSlop
+    pointerInput(enabled, key) {
+        if (!enabled) {
+            return@pointerInput
+        }
+        forEachGesture {
+            awaitPointerEventScope {
+                val down = awaitFirstDown(requireUnconsumed = false)
+                onStart()
+                var dragCurrent = down.position
+                drag(down.id) { change ->
+                    onRotate(dragCurrent, change.position)
+                    dragCurrent = change.position
+                    if ((change.position - down.position).getDistance() > touchSlop) {
+                        change.consume()
+                    }
+                }
+                onEnd()
             }
-            onEnd()
         }
     }
 }
