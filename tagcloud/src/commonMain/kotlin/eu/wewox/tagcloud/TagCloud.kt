@@ -40,12 +40,15 @@ public fun TagCloud(
     // Invoke content lambda to get items and rotate them based on the current rotation state
     val latestContent = rememberUpdatedState(content)
     val staticItems = remember { TagCloudScopeImpl().apply(latestContent.value).items }
-    val items = staticItems.map { it.copy(coordinates = it.coordinates.rotate(state.rotation)) }
 
     Layout(
         content = {
-            items.forEach { item ->
-                val scope = TagCloudItemScopeImpl(item.coordinates)
+            staticItems.forEach { item ->
+                val scope = TagCloudItemScopeImpl(
+                    coordinatesProvider = {
+                        item.coordinates.rotate(state.rotation)
+                    }
+                )
                 item.content.invoke(scope)
             }
         },
@@ -64,7 +67,7 @@ public fun TagCloud(
         layout(radius * 2, radius * 2) {
             // Place TagCloud items, check getItemOffset() method
             placeables.forEachIndexed { index, placeable ->
-                val coordinates = items[index].coordinates
+                val coordinates = staticItems[index].coordinates.rotate(state.rotation)
                 val offset = placeable.getItemOffset(coordinates, radius)
                 placeable.place(offset, zIndex = coordinates.z)
             }

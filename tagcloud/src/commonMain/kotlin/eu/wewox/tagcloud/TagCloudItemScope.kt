@@ -32,10 +32,14 @@ public interface TagCloudItemScope {
 
 /**
  * Implementation of the [TagCloudItemScope].
+ *
+ * @property coordinatesProvider Provides the rotated coordinate of the item.
  */
 internal class TagCloudItemScopeImpl(
-    override val coordinates: Vector3,
+    private val coordinatesProvider: () -> Vector3,
 ) : TagCloudItemScope {
+
+    override val coordinates: Vector3 get() = coordinatesProvider.invoke()
 
     override fun Modifier.tagCloudItemFade(toAlpha: Float): Modifier =
         graphicsLayer {
