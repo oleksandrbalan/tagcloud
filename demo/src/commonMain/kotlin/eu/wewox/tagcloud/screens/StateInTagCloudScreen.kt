@@ -41,7 +41,7 @@ import kotlin.math.sign
  * Example of how to use state.
  */
 @Composable
-fun StatInTagCloudScreen(onBackClick: () -> Unit) {
+fun StateInTagCloudScreen(onBackClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopBar(

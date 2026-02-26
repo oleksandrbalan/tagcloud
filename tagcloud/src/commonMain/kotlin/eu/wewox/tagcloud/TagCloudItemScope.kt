@@ -11,23 +11,34 @@ public interface TagCloudItemScope {
 
     /**
      * Current position of the item in the TagCloud.
-     * Could be used to alter it's appearance.
+     * Could be used to alter its appearance.
      */
     public val coordinates: Vector3
 
     /**
      * Fades far most items up to the given alpha.
      *
-     * @param toAlpha The alpha for most items (with lowest z coordinate).
+     * @param toAlpha The alpha for most items (with the lowest z coordinate).
      */
     public fun Modifier.tagCloudItemFade(toAlpha: Float = 0.25f): Modifier
 
     /**
      * Scales down far most items up to the given scale.
      *
-     * @param toScale The scale for most items (with lowest z coordinate).
+     * @param toScale The scale for most items (with the lowest z coordinate).
      */
     public fun Modifier.tagCloudItemScaleDown(toScale: Float = 0.5f): Modifier
+
+    /**
+     * Fades and scales down far most items up to the given scale.
+     *
+     * @param toAlpha The alpha for most items (with the lowest z coordinate).
+     * @param toScale The scale for most items (with the lowest z coordinate).
+     */
+    public fun Modifier.tagCloudItemStyle(
+        toAlpha: Float = 0.25f,
+        toScale: Float = 0.5f,
+    ): Modifier
 }
 
 /**
@@ -48,6 +59,15 @@ internal class TagCloudItemScopeImpl(
 
     override fun Modifier.tagCloudItemScaleDown(toScale: Float): Modifier =
         graphicsLayer {
+            val scale = coordinates.z.rescale(toScale, 1f)
+            scaleX = scale
+            scaleY = scale
+        }
+
+    override fun Modifier.tagCloudItemStyle(toAlpha: Float, toScale: Float): Modifier =
+        graphicsLayer {
+            alpha = coordinates.z.rescale(toAlpha, 1f)
+
             val scale = coordinates.z.rescale(toScale, 1f)
             scaleX = scale
             scaleY = scale

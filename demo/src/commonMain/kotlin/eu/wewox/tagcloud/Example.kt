@@ -26,4 +26,8 @@ enum class Example(
         "Features cloud",
         "Showcases how tag cloud can be customized"
     ),
+    GlobeCloud(
+        "Globe cloud",
+        "Spinning globe with dots"
+    ),
 }

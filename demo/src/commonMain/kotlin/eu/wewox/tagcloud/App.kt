@@ -9,8 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import eu.wewox.tagcloud.screens.ComponentGalleryCloudScreen
 import eu.wewox.tagcloud.screens.FeaturesCloudScreen
+import eu.wewox.tagcloud.screens.GlobeCloudScreen
 import eu.wewox.tagcloud.screens.SimpleTagCloudScreen
-import eu.wewox.tagcloud.screens.StatInTagCloudScreen
+import eu.wewox.tagcloud.screens.StateInTagCloudScreen
 import eu.wewox.tagcloud.ui.theme.TagCloudTheme
 
 @Composable
@@ -36,9 +37,10 @@ fun App(
             when (selected) {
                 null -> RootScreen(onExampleClick = onChangeExample)
                 Example.SimpleTagCloud -> SimpleTagCloudScreen(reset)
-                Example.StateInTagCloud -> StatInTagCloudScreen(reset)
+                Example.StateInTagCloud -> StateInTagCloudScreen(reset)
                 Example.ComponentGalleryCloud -> ComponentGalleryCloudScreen(reset)
                 Example.FeaturesCloud -> FeaturesCloudScreen(reset)
+                Example.GlobeCloud -> GlobeCloudScreen(reset)
             }
         }
     }
