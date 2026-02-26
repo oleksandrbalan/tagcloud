@@ -2,6 +2,7 @@ package eu.wewox.tagcloud.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -85,7 +86,7 @@ fun ComponentGalleryCloudScreen(onBackClick: () -> Unit) {
 private fun ComponentGalleryCloud(state: TagCloudState) {
     TagCloud(
         state = state,
-        modifier = Modifier.padding(64.dp)
+        contentPadding = PaddingValues(64.dp),
     ) {
         items(Components) {
             Box(

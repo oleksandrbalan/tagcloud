@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -109,7 +110,7 @@ private fun FeaturesCloud(state: TagCloudState, visible: Boolean) {
 
     TagCloud(
         state = state,
-        modifier = Modifier.padding(64.dp)
+        contentPadding = PaddingValues(64.dp),
     ) {
         itemsIndexed(features) { index, feature ->
             FeatureItem(index, feature, currentVisible.value)

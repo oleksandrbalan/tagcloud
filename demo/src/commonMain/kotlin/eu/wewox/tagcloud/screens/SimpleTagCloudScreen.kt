@@ -1,6 +1,7 @@
 package eu.wewox.tagcloud.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,7 +78,7 @@ private fun SimpleTagCloud(onItemSelected: (String) -> Unit) {
 
     TagCloud(
         state = rememberTagCloudState(),
-        modifier = Modifier.padding(64.dp)
+        contentPadding = PaddingValues(64.dp),
     ) {
         items(labels) {
             Surface(

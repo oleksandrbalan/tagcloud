@@ -75,7 +75,7 @@ val labels = List(32) { "Item #$it" }
 
 TagCloud(
     state = rememberTagCloudState(),
-    modifier = Modifier.padding(64.dp)
+    contentPadding = PaddingValues(64.dp),
 ) {
     items(labels) {
         Text(
@@ -93,7 +93,6 @@ See Demo application and [examples](demo/src/commonMain/kotlin/eu/wewox/tagcloud
 ## TODO list
 
 * Add ability to focus an item
-* Add content padding for the TagCloud to expand gesture area
 * Add fling support
 * Add `animateTo` / `animateBy` methods to the `TagCloudState`
 * Add ability to change where item is facing

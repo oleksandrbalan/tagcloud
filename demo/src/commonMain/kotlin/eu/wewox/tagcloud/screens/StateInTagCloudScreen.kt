@@ -2,6 +2,7 @@ package eu.wewox.tagcloud.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -103,7 +104,11 @@ private fun TagCloudAxis(
     state: TagCloudState,
     modifier: Modifier
 ) {
-    TagCloud(state, modifier.padding(32.dp)) {
+    TagCloud(
+        modifier = modifier,
+        state = state,
+        contentPadding = PaddingValues(64.dp),
+    ) {
         val size = 3
         val values = (-size..size step 1).map { it / size.toFloat() } - 0f
 
