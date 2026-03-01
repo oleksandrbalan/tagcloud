@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -20,12 +21,14 @@ import androidx.compose.ui.unit.toOffset
 import eu.wewox.tagcloud.math.Quaternion
 import eu.wewox.tagcloud.math.Vector3
 import eu.wewox.tagcloud.math.rotate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 /**
  * The composable which displays the content on the 3D sphere, aka tag cloud.
  * In TagCloud coordinate system:
- * - "y" axis is a horizontal one with "+1" to the right and "-1" to the left.
+ * - "x" axis is a horizontal one with "+1" to the right and "-1" to the left.
  * - "y" axis is a vertical one with "+1" on top and "-1" at the bottom.
  * - "z" axis is like a z-index with "+1" on above and "-1" below.
  *
@@ -41,6 +44,9 @@ public fun TagCloud(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     content: TagCloudScope.() -> Unit,
 ) {
+    // Scope for internal animations
+    val coroutineScope = rememberCoroutineScope()
+
     // Cache layout info, as it is needed to correctly calculate rotation gesture
     var layoutInfo by remember { mutableStateOf(TagCloudLayoutInfo()) }
 
@@ -52,7 +58,8 @@ public fun TagCloud(
         content = {
             staticItems.forEach { item ->
                 val scope = TagCloudItemScopeImpl(
-                    coordinatesProvider = {
+                    originalCoordinates = item.coordinates,
+                    currentCoordinatesProvider = {
                         item.coordinates.rotate(state.rotation)
                     }
                 )
@@ -61,6 +68,7 @@ public fun TagCloud(
         },
         modifier = modifier.rotateGesture(
             state = state,
+            coroutineScope = coroutineScope,
             layoutInfoProvider = { layoutInfo }
         )
     ) { measurables, constraints ->
@@ -104,10 +112,12 @@ public fun TagCloud(
  * and rotates a TagCloud by an angle between the two.
  *
  * @param state The state of the TagCloud to change its rotation.
+ * @param coroutineScope The scope for internal animations.
  * @param layoutInfoProvider The lambda which returns the current layout info of the TagCloud.
  */
 private fun Modifier.rotateGesture(
     state: TagCloudState,
+    coroutineScope: CoroutineScope,
     layoutInfoProvider: () -> TagCloudLayoutInfo,
 ): Modifier = rotateGesture(
     key = state,
@@ -124,7 +134,9 @@ private fun Modifier.rotateGesture(
     val quaternion = Quaternion.create(fromVector, toVector)
 
     // Perform rotation by the calculated quaternion
-    state.rotateBy(quaternion)
+    coroutineScope.launch {
+        state.rotateBy(quaternion)
+    }
 }
 
 /**

@@ -45,11 +45,37 @@ public interface TagCloudScope {
     )
 
     /**
+     * Adds multiple items by their initial positions in the TagCloud.
+     *
+     * @param items The list of items to place.
+     * @param coordinates The initial items position in the TagCloud (without applied rotation).
+     * @param content The content displayed by a single item.
+     */
+    public fun <T> items(
+        items: List<T>,
+        coordinates: (T) -> Vector3,
+        content: @Composable TagCloudItemScope.(T) -> Unit
+    )
+
+    /**
+     * Adds multiple items by their initial positions in the TagCloud.
+     *
+     * @param items The list of items to place.
+     * @param coordinates The initial items position in the TagCloud (without applied rotation).
+     * @param content The content displayed by a single item.
+     */
+    public fun <T> itemsIndexed(
+        items: List<T>,
+        coordinates: (Int, T) -> Vector3,
+        content: @Composable TagCloudItemScope.(Int, T) -> Unit
+    )
+
+    /**
      * Adds multiple items which are uniformly distributed on the TagCloud surface.
      *
      * @param items The list of items to place.
      * @param layer The layer for each item, could be used to control how "deep" item is placed
-     * in the TagCloud. By default layer is set to 1, which means the sphere surface.
+     * in the TagCloud. By default, layer is set to 1, which means the sphere surface.
      * @param rotation The initial rotation for each item.
      * @param content The content displayed by a single item.
      */
@@ -118,6 +144,36 @@ internal class TagCloudScopeImpl : TagCloudScope {
                 TagCloudItem(
                     coordinates = itemCoordinates,
                     content = { content(index, itemCoordinates) }
+                )
+            }
+        )
+    }
+
+    override fun <T> items(
+        items: List<T>,
+        coordinates: (T) -> Vector3,
+        content: @Composable (TagCloudItemScope.(T) -> Unit)
+    ) {
+        _items.addAll(
+            items.map { item ->
+                TagCloudItem(
+                    coordinates = coordinates(item),
+                    content = { content(item) }
+                )
+            }
+        )
+    }
+
+    override fun <T> itemsIndexed(
+        items: List<T>,
+        coordinates: (Int, T) -> Vector3,
+        content: @Composable (TagCloudItemScope.(Int, T) -> Unit)
+    ) {
+        _items.addAll(
+            items.mapIndexed { index, item ->
+                TagCloudItem(
+                    coordinates = coordinates(index, item),
+                    content = { content(index, item) }
                 )
             }
         )

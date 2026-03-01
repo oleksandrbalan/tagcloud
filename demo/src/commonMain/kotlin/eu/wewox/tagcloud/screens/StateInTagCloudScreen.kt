@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import eu.wewox.tagcloud.ui.extensions.formatToDecimals
 import eu.wewox.tagcloud.ui.theme.SpacingMedium
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sign
@@ -56,6 +58,7 @@ fun StateInTagCloudScreen(onBackClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            val scope = rememberCoroutineScope()
             val autoRotation = remember { AutoRotation() }
 
             val state = rememberTagCloudState(
@@ -92,7 +95,11 @@ fun StateInTagCloudScreen(onBackClick: () -> Unit) {
                 )
 
                 autoRotation.Controls(
-                    onResetClick = { state.rotateTo(0f, Vector3.Zero) }
+                    onResetClick = {
+                        scope.launch {
+                            state.rotateTo(0f, Vector3.Zero)
+                        }
+                    }
                 )
             }
         }

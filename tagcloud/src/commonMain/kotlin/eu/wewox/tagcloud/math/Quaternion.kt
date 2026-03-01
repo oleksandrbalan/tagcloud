@@ -90,6 +90,10 @@ public class Quaternion internal constructor(w: Float, x: Float, y: Float, z: Fl
         return result
     }
 
+    override fun toString(): String {
+        return "Quaternion(w=$w, x=$x, y=$y, z=$z)"
+    }
+
     public companion object {
 
         /**
@@ -119,9 +123,41 @@ public class Quaternion internal constructor(w: Float, x: Float, y: Float, z: Fl
          * @return The rotation quaternion.
          */
         public fun create(from: Vector3, to: Vector3): Quaternion {
-            val normal = Vector3.crossProduct(from, to)
-            val angle = Vector3.dotProduct(from, to)
-            return create(angle, normal)
+            val fromNormalized = from.normalized()
+            val toNormalized = to.normalized()
+
+            val dot = Vector3.dotProduct(fromNormalized, toNormalized)
+
+            // Edge case: 180-degree rotation (vectors point in almost exactly opposite directions).
+            if (dot < -0.999999f) {
+                // Try to find a perpendicular axis using the X axis as a helper.
+                var orthoAxis = Vector3.crossProduct(Vector3(1f, 0f, 0f), fromNormalized)
+
+                // If fromNormalized is too close to the X axis, the cross product will be near zero.
+                // In that case, use the Y axis as a fallback.
+                if (orthoAxis.length() < 0.001f) {
+                    orthoAxis = Vector3.crossProduct(Vector3(0f, 1f, 0f), fromNormalized)
+                }
+
+                orthoAxis = orthoAxis.normalized()
+
+                // The quaternion for a 180-degree rotation has w = 0 and the vector part is the rotation axis.
+                return Quaternion(
+                    w = 0f,
+                    x = orthoAxis.x,
+                    y = orthoAxis.y,
+                    z = orthoAxis.z,
+                )
+            }
+
+            val normal = Vector3.crossProduct(fromNormalized, toNormalized)
+            val angle = 1 + Vector3.dotProduct(fromNormalized, toNormalized)
+            return Quaternion(
+                w = angle,
+                x = normal.x,
+                y = normal.y,
+                z = normal.z,
+            )
         }
     }
 }

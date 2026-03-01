@@ -92,8 +92,6 @@ See Demo application and [examples](demo/src/commonMain/kotlin/eu/wewox/tagcloud
 
 ## TODO list
 
-* Add ability to focus an item
 * Add fling support
-* Add `animateTo` / `animateBy` methods to the `TagCloudState`
 * Add ability to change where item is facing
 * Fix item clipping when scale is greater than 1

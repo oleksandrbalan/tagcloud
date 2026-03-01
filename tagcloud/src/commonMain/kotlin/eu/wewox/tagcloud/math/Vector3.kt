@@ -12,13 +12,21 @@ public data class Vector3(
 ) {
 
     /**
+     * Calculates the length of the vector.
+     *
+     * @return The length of the vector.
+     */
+    public fun length(): Float =
+        sqrt(x * x + y * y + z * z)
+
+    /**
      * Creates a new normalized 3D vector.
      *
      * @return The new 3D unit vector.
      */
     public fun normalized(): Vector3 {
         if (this == Zero) return this
-        val norm = 1f / sqrt(dotProduct(this, this))
+        val norm = 1f / length()
         return this * norm
     }
 

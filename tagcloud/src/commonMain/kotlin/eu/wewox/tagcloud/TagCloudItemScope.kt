@@ -10,6 +10,11 @@ import eu.wewox.tagcloud.math.Vector3
 public interface TagCloudItemScope {
 
     /**
+     * Original position of the item in the TagCloud before applying any rotation.
+     */
+    public val originalCoordinates: Vector3
+
+    /**
      * Current position of the item in the TagCloud.
      * Could be used to alter its appearance.
      */
@@ -44,13 +49,15 @@ public interface TagCloudItemScope {
 /**
  * Implementation of the [TagCloudItemScope].
  *
- * @property coordinatesProvider Provides the rotated coordinate of the item.
+ * @property originalCoordinates Original position of the item in the TagCloud before applying any rotation.
+ * @property currentCoordinatesProvider Provides the rotated coordinate of the item.
  */
 internal class TagCloudItemScopeImpl(
-    private val coordinatesProvider: () -> Vector3,
+    override val originalCoordinates: Vector3,
+    private val currentCoordinatesProvider: () -> Vector3,
 ) : TagCloudItemScope {
 
-    override val coordinates: Vector3 get() = coordinatesProvider.invoke()
+    override val coordinates: Vector3 get() = currentCoordinatesProvider.invoke()
 
     override fun Modifier.tagCloudItemFade(toAlpha: Float): Modifier =
         graphicsLayer {
