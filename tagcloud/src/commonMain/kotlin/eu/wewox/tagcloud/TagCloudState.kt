@@ -146,7 +146,8 @@ public class TagCloudState(
      * TagCloud axis.
      */
     public suspend fun animateRotateBy(
-        angle: Float, vector: Vector3,
+        angle: Float,
+        vector: Vector3,
         globalAxis: Boolean = true,
         animationSpec: AnimationSpec<Quaternion> = defaultAnimationSpec,
     ) {
