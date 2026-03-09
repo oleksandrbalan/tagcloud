@@ -1,33 +1,51 @@
 package eu.wewox.tagcloud.screens
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 import eu.wewox.tagcloud.Example
 import eu.wewox.tagcloud.TagCloud
+import eu.wewox.tagcloud.TagCloudState
+import eu.wewox.tagcloud.math.Quaternion
 import eu.wewox.tagcloud.math.Vector3
 import eu.wewox.tagcloud.rememberTagCloudState
 import eu.wewox.tagcloud.ui.components.TopBar
-import kotlinx.coroutines.isActive
-import kotlin.math.PI
+import eu.wewox.tagcloud.ui.theme.SpacingSmall
+import kotlinx.coroutines.launch
 
 /**
  * Spinning globe with dots.
@@ -45,54 +63,130 @@ fun GlobeCloudScreen(onBackClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(padding),
             verticalArrangement = Arrangement.Center,
         ) {
-            // 6 degrees per second
-            val speedPerSecond = PI.toFloat() / 30f
-            var autoRotation by remember { mutableStateOf(true) }
+            val scope = rememberCoroutineScope()
+            val state = rememberTagCloudState()
 
-            val state = rememberTagCloudState(
-                onStartGesture = { autoRotation = false },
-                onEndGesture = { autoRotation = true },
+            var selected: City? by remember { mutableStateOf(null) }
+
+            GlobeCloud(
+                selected = selected,
+                state = state,
             )
 
-            LaunchedEffect(state, autoRotation) {
-                if (autoRotation) {
-                    var lastFrameTime = withFrameNanos { it }
-
-                    while (isActive) {
-                        withFrameNanos { currentFrameTime ->
-                            val deltaNanos = currentFrameTime - lastFrameTime
-                            lastFrameTime = currentFrameTime
-
-                            val deltaSeconds = deltaNanos / 1_000_000_000f
-
-                            val deltaAngle = speedPerSecond * deltaSeconds
-                            state.rotateBy(deltaAngle, Vector3(0f, 1f, 0f))
-                        }
+            CitiesColumn(
+                selected = selected,
+                onCityClick = {
+                    selected = it
+                    scope.launch {
+                        state.animateRotateTo(
+                            Quaternion.create(
+                                from = it.coordinates,
+                                to = Vector3(0f, 0f, 1f)
+                            ),
+                        )
                     }
                 }
-            }
+            )
+        }
+    }
+}
 
-            TagCloud(
-                state = state,
-                contentPadding = PaddingValues(64.dp),
+@Composable
+private fun GlobeCloud(
+    selected: City?,
+    state: TagCloudState,
+    modifier: Modifier = Modifier,
+) {
+    val selectedUpdated by rememberUpdatedState(selected)
+    TagCloud(
+        modifier = modifier,
+        state = state,
+        contentPadding = PaddingValues(64.dp),
+    ) {
+        items(
+            items = WorldPointsList,
+            coordinates = { it.coordinates },
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .tagCloudItemStyle()
+                    .size(6.dp)
+                    .background(
+                        color = getTopographicColor(it.elevation),
+                        shape = CircleShape,
+                    ),
+            )
+        }
+
+        items(
+            items = CitiesList,
+            coordinates = { it.coordinates },
+        ) {
+            val alpha by animateFloatAsState(if (it == selectedUpdated) 1f else 0f)
+            Box(
+                modifier = Modifier
+                    .height(64.dp)
+                    .tagCloudItemStyle()
+                    .alpha(alpha),
+                contentAlignment = Alignment.Center,
             ) {
-                itemsIndexed(
-                    WorldPointsList.map { it.coordinates }
-                ) { index, _ ->
-                    Spacer(
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter),
+                    shape = RoundedCornerShape(SpacingSmall),
+                    color = MaterialTheme.colorScheme.primary,
+                ) {
+                    Text(
+                        text = it.name,
                         modifier = Modifier
-                            .tagCloudItemStyle()
-                            .size(6.dp)
-                            .background(
-                                color = getTopographicColor(WorldPointsList[index].elevation),
-                                shape = CircleShape,
-                            ),
+                            .padding(
+                                horizontal = 4.dp,
+                                vertical = 2.dp,
+                            )
                     )
                 }
+                Spacer(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = CircleShape,
+                        ),
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun CitiesColumn(
+    selected: City?,
+    onCityClick: (City) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        CitiesList.forEach {
+            ListItem(
+                modifier = Modifier
+                    .clickable {
+                        onCityClick(it)
+                    },
+                headlineContent = {
+                    Text(it.name)
+                },
+                trailingContent = {
+                    if (it == selected) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                        )
+                    }
+                }
+            )
         }
     }
 }
@@ -710,4 +804,44 @@ private val WorldPointsList = listOf(
     WorldPoint(74.0f, Vector3(0.4564971f, -0.3862747f, -0.8015f)),
     WorldPoint(28.0f, Vector3(0.5857978f, -0.07999181f, -0.8065f)),
     WorldPoint(491.0f, Vector3(0.5412054f, -0.1494672f, -0.8275f)),
+)
+
+private data class City(
+    val name: String,
+    val coordinates: Vector3,
+)
+
+private val CitiesList = listOf(
+    City(
+        name = "Prague",
+        coordinates = Vector3(0.1600f, 0.7669f, 0.6215f),
+    ),
+    City(
+        name = "Tokyo",
+        coordinates = Vector3(0.5259f, 0.5832f, -0.6191f),
+    ),
+    City(
+        name = "New York City",
+        coordinates = Vector3(-0.7286f, 0.6523f, 0.2089f),
+    ),
+    City(
+        name = "Dubai",
+        coordinates = Vector3(0.7436f, 0.4259f, 0.5155f),
+    ),
+    City(
+        name = "Bangkok",
+        coordinates = Vector3(0.9550f, 0.2378f, -0.1770f),
+    ),
+    City(
+        name = "Sydney",
+        coordinates = Vector3(0.3999f, -0.5573f, -0.7277f),
+    ),
+    City(
+        name = "Rio de Janeiro",
+        coordinates = Vector3(-0.6302f, -0.3892f, 0.6718f),
+    ),
+    City(
+        name = "Cape Town",
+        coordinates = Vector3(0.2622f, -0.5581f, 0.7872f),
+    )
 )

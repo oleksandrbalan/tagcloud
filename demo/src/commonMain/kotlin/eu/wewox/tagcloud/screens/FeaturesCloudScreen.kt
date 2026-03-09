@@ -9,6 +9,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,14 +24,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.Dp
@@ -40,14 +42,14 @@ import eu.wewox.tagcloud.Example
 import eu.wewox.tagcloud.TagCloud
 import eu.wewox.tagcloud.TagCloudItemScope
 import eu.wewox.tagcloud.TagCloudState
+import eu.wewox.tagcloud.math.Quaternion
 import eu.wewox.tagcloud.math.Vector3
 import eu.wewox.tagcloud.rememberTagCloudState
 import eu.wewox.tagcloud.ui.components.Res
 import eu.wewox.tagcloud.ui.components.TopBar
 import eu.wewox.tagcloud.ui.theme.SpacingMedium
 import eu.wewox.tagcloud.ui.theme.SpacingSmall
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import kotlin.random.Random
 
@@ -70,24 +72,24 @@ fun FeaturesCloudScreen(onBackClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            val scope = rememberCoroutineScope()
+            val state = rememberTagCloudState()
+
             var visible by remember { mutableStateOf(false) }
-            var autoRotation by remember { mutableStateOf(true) }
-
-            val state = rememberTagCloudState(
-                onStartGesture = { autoRotation = false },
-                onEndGesture = { autoRotation = true },
-            )
-
-            LaunchedEffect(state, autoRotation) {
-                while (isActive && autoRotation) {
-                    delay(10)
-                    state.rotateBy(0.001f, Vector3(1f, 1f, 1f))
-                }
-            }
 
             FeaturesCloud(
                 state = state,
                 visible = visible,
+                onFocusItem = { coordinates ->
+                    scope.launch {
+                        state.animateRotateBy(
+                            Quaternion.create(
+                                from = coordinates,
+                                to = Vector3(0f, 0f, 1f)
+                            ),
+                        )
+                    }
+                }
             )
 
             Button(
@@ -103,7 +105,7 @@ fun FeaturesCloudScreen(onBackClick: () -> Unit) {
 }
 
 @Composable
-private fun FeaturesCloud(state: TagCloudState, visible: Boolean) {
+private fun FeaturesCloud(state: TagCloudState, visible: Boolean, onFocusItem: (Vector3) -> Unit) {
     val currentVisible = rememberUpdatedState(visible)
 
     val (features, particles) = rememberData()
@@ -113,7 +115,12 @@ private fun FeaturesCloud(state: TagCloudState, visible: Boolean) {
         contentPadding = PaddingValues(64.dp),
     ) {
         itemsIndexed(features) { index, feature ->
-            FeatureItem(index, feature, currentVisible.value)
+            FeatureItem(
+                index = index,
+                feature = feature,
+                visible = currentVisible.value,
+                onClick = { onFocusItem(coordinates) },
+            )
         }
 
         itemsIndexed(
@@ -130,6 +137,7 @@ private fun TagCloudItemScope.FeatureItem(
     index: Int,
     feature: Feature,
     visible: Boolean,
+    onClick: () -> Unit,
 ) {
     val spec = tween<Float>(
         durationMillis = 500,
@@ -149,6 +157,8 @@ private fun TagCloudItemScope.FeatureItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
+                .clip(CircleShape)
+                .clickable(onClick = onClick)
                 .background(feature.color, CircleShape)
                 .border(1.dp, Color.Black, CircleShape)
                 .padding(SpacingSmall)
